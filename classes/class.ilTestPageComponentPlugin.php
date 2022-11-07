@@ -88,7 +88,7 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * @param array  $a_properties     properties saved in the page (will be deleted afterwards)
      * @param string $a_plugin_version plugin version of the properties
      */
-    public function onDelete(array $a_properties, string $a_plugin_version) : void
+    public function onDelete(array $a_properties, string $a_plugin_version, bool $move_operation = false) : void
     {
         if ($file_id = ($a_properties['page_file'] ?? null)) {
             try {

@@ -81,7 +81,7 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
             $this->returnToParent();
         }
         $form->setValuesByPost();
-        $this->tpl->setContent($form->getHtml());
+        $this->tpl->setContent($form->getHTML());
     }
 
     public function edit() : void
@@ -102,7 +102,7 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
             $this->returnToParent();
         }
         $form->setValuesByPost();
-        $this->tpl->setContent($form->getHtml());
+        $this->tpl->setContent($form->getHTML());
     }
 
     /**

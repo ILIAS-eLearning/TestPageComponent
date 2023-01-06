@@ -59,20 +59,21 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      */
     public function onClone(array &$a_properties, string $a_plugin_version) : void
     {
+        global $DIC;
+        $mt = $DIC->ui()->mainTemplate();
         if ($file_id = $a_properties['page_file']) {
             try {
                 include_once("./Modules/File/classes/class.ilObjFile.php");
                 $fileObj = new ilObjFile($file_id, false);
                 $newObj = clone($fileObj);
-                $newObj->setId(null);
-                $newObj->create();
-                $newObj->createDirectory();
+                $newObj->setId(0);
+                $new_id = $newObj->create();
+                $newObj = new ilObjFile($new_id, false);
                 $this->rCopy($fileObj->getDirectory(), $newObj->getDirectory());
                 $a_properties['page_file'] = $newObj->getId();
-
-                ilUtil::sendInfo("File Object $file_id cloned.", true);
+                $mt->setOnScreenMessage("info", "File Object $file_id cloned.", true);
             } catch (Exception $e) {
-                ilUtil::sendFailure($e->getMessage(), true);
+                $mt->setOnScreenMessage("failure", $e->getMessage(), true);
             }
         }
 
@@ -90,15 +91,21 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      */
     public function onDelete(array $a_properties, string $a_plugin_version, bool $move_operation = false) : void
     {
+        global $DIC;
+        $mt = $DIC->ui()->mainTemplate();
+
+        if ($move_operation) {
+            return;
+        }
+
         if ($file_id = ($a_properties['page_file'] ?? null)) {
             try {
                 include_once("./Modules/File/classes/class.ilObjFile.php");
                 $fileObj = new ilObjFile($file_id, false);
                 $fileObj->delete();
-
-                ilUtil::sendInfo("File Object $file_id deleted.", true);
+                $mt->setOnScreenMessage("info", "File Object $file_id deleted.", true);
             } catch (Exception $e) {
-                ilUtil::sendFailure($e->getMessage(), true);
+                $mt->setOnScreenMessage("failure", $e->getMessage(), true);
             }
         }
 
@@ -115,7 +122,9 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
     private function rCopy(string $src, string $dst) : void
     {
         $dir = opendir($src);
-        mkdir($dst);
+        if (!is_dir($dst)) {
+            mkdir($dst);
+        }
         while (false !== ($file = readdir($dir))) {
             if (($file != '.') && ($file != '..')) {
                 if (is_dir($src . '/' . $file)) {

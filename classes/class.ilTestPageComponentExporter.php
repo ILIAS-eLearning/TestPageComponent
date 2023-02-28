@@ -68,8 +68,13 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      */
     public function getXmlRepresentation(string $a_entity, string $a_schema_version, string $a_id) : string
     {
+        global $DIC;
+
+        /** @var ilComponentFactory $component_factory */
+        $component_factory = $DIC["component.factory"];
+
         /** @var ilTestPageComponentPlugin $plugin */
-        $plugin = ilPluginAdmin::getPluginObject(IL_COMP_SERVICE, 'COPage', 'pgcp', 'TestPageComponent');
+        $plugin = $component_factory->getPlugin("pctpc");
 
         $properties = self::getPCProperties($a_id);
         $data = $plugin->getData($properties['additional_data_id']);

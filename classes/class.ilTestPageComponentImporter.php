@@ -39,8 +39,13 @@ class ilTestPageComponentImporter extends ilPageComponentPluginImporter
         string $a_xml,
         ilImportMapping $a_mapping
     ) : void {
+        global $DIC;
+
+        /** @var ilComponentFactory $component_factory */
+        $component_factory = $DIC["component.factory"];
+
         /** @var ilTestPageComponentPlugin $plugin */
-        $plugin = ilPluginAdmin::getPluginObject(IL_COMP_SERVICE, 'COPage', 'pgcp', 'TestPageComponent');
+        $plugin = $component_factory->getPlugin("pctpc");
 
         $new_id = self::getPCMapping($a_id, $a_mapping);
 

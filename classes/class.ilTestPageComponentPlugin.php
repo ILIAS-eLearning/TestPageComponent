@@ -35,7 +35,7 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
     /**
      * Check if parent type is valid
      */
-    public function isValidParentType(string $a_parent_type) : bool
+    public function isValidParentType($a_parent_type) : bool
     {
         // test with all parent types
         return true;
@@ -57,7 +57,7 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * @param array  $a_properties     properties saved in the page, (should be modified if neccessary)
      * @param string $a_plugin_version plugin version of the properties
      */
-    public function onClone(array &$a_properties, string $a_plugin_version) : void
+    public function onClone(&$a_properties, $a_plugin_version) : void
     {
         global $DIC;
         $mt = $DIC->ui()->mainTemplate();
@@ -89,7 +89,7 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * @param array  $a_properties     properties saved in the page (will be deleted afterwards)
      * @param string $a_plugin_version plugin version of the properties
      */
-    public function onDelete(array $a_properties, string $a_plugin_version, bool $move_operation = false) : void
+    public function onDelete($a_properties, $a_plugin_version, bool $move_operation = false) : void
     {
         global $DIC;
         $mt = $DIC->ui()->mainTemplate();

@@ -34,10 +34,10 @@ class ilTestPageComponentImporter extends ilPageComponentPluginImporter
      * @param ilImportMapping $a_mapping
      */
     public function importXmlRepresentation(
-        string $a_entity,
-        string $a_id,
-        string $a_xml,
-        ilImportMapping $a_mapping
+        $a_entity,
+        $a_id,
+        $a_xml,
+        $a_mapping
     ) : void {
         global $DIC;
 

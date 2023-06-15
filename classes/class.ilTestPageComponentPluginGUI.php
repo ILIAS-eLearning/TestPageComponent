@@ -25,9 +25,9 @@
  */
 class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
 {
-    protected ilLanguage $lng;
-    protected ilCtrl $ctrl;
-    protected ilGlobalTemplateInterface $tpl;
+    protected $lng;
+    protected $ctrl;
+    protected $tpl;
 
     public function __construct()
     {
@@ -222,7 +222,7 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
      * @param string    page mode (edit, presentation, print, preview, offline)
      * @return string   html code
      */
-    public function getElementHTML(string $a_mode, array $a_properties, string $a_plugin_version) : string
+    public function getElementHTML($a_mode, $a_properties, $a_plugin_version) : string
     {
         $display = array_merge($a_properties, $this->getPageInfo());
 

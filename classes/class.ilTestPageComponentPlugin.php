@@ -69,7 +69,6 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
                 $newObj->setId(0);
                 $new_id = $newObj->create();
                 $newObj = new ilObjFile($new_id, false);
-                $this->rCopy($fileObj->getDirectory(), $newObj->getDirectory());
                 $a_properties['page_file'] = $newObj->getId();
                 $mt->setOnScreenMessage("info", "File Object $file_id cloned.", true);
             } catch (Exception $e) {

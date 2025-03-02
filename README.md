@@ -10,8 +10,8 @@ INSTALLATION
 This is an example plugin with minimal features for the ILIAS PageComponent Plugin Slot.
 
 ```
-mkdir -p Customizing/global/plugins/Services/COPage/PageComponent
-cd Customizing/global/plugins/Services/COPage/PageComponent
+mkdir -p public/Customizing/plugins/COPage/PageComponent
+cd public/Customizing/plugins/COPage/PageComponent
 git clone https://github.com/ILIAS-eLearning/TestPageComponent.git
 ```
 

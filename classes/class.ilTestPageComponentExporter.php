@@ -36,6 +36,9 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      */
     public function getXmlExportHeadDependencies(string $a_entity, string $a_target_release, array $a_ids) : array
     {
+        echo "getXmlExportHeadDependencies";
+        exit;
+
         // collect the files to export
         $file_ids = array();
         foreach ($a_ids as $id) {
@@ -68,6 +71,9 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      */
     public function getXmlRepresentation(string $a_entity, string $a_schema_version, string $a_id) : string
     {
+        echo "getXmlRepresentation";
+        exit;
+
         global $DIC;
 
         /** @var ilComponentFactory $component_factory */
@@ -90,6 +96,9 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      */
     public function getXmlExportTailDependencies(string $a_entity, string $a_target_release, array $a_ids) : array
     {
+        echo "getXmlExportTailDependencies";
+        exit;
+
         return array();
     }
 

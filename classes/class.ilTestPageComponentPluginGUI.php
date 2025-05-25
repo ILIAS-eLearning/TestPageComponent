@@ -46,12 +46,11 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
     public function executeCommand() : void
     {
         $next_class = $this->ctrl->getNextClass();
-
         switch ($next_class) {
             default:
                 // perform valid commands
                 $cmd = $this->ctrl->getCmd();
-                if (in_array($cmd, array("create", "save", "edit", "update", "cancel", "downloadFile"))) {
+                if (in_array($cmd, array("create", "create_plug", "save", "edit", "update", "cancel", "downloadFile"))) {
                     $this->$cmd();
                 }
                 break;

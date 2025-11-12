@@ -12,7 +12,7 @@ This is an example plugin with minimal features for the ILIAS PageComponent Plug
 ```
 mkdir -p public/Customizing/global/plugins/Services/COPage/PageComponent
 cd public/Customizing/global/plugins/Services/COPage/PageComponent
-git clone --branch release_10 https://github.com/ILIAS-eLearning/TestPageComponent.git
+git clone --branch release_11 https://github.com/ILIAS-eLearning/TestPageComponent.git
 ```
 
 ### Branching

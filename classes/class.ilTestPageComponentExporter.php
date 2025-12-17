@@ -49,7 +49,7 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
         if (!empty(($file_ids))) {
             return array(
                 array(
-                    "component" => "Modules/File",
+                    "component" => "components/ILIAS/File",
                     "entity" => "file",
                     "ids" => $file_ids
                 )

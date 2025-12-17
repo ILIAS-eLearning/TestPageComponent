@@ -172,7 +172,6 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
                 $fileObj->setTitle($_FILES["page_file"]["name"]);
                 $fileObj->setDescription("");
                 $fileObj->setFileName($_FILES["page_file"]["name"]);
-                $fileObj->setMode("filelist");
                 if (empty($old_file_id)) {
                     $fileObj->create();
                 } else {

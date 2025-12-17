@@ -54,7 +54,7 @@ class ilTestPageComponentImporter extends ilPageComponentPluginImporter
 
         // write the mapped file id to the properties
         if ($old_file_id = $properties['page_file']) {
-            $new_file_id = $a_mapping->getMapping("Modules/File", 'file', $old_file_id);
+            $new_file_id = $a_mapping->getMapping("components/ILIAS/File", 'file', $old_file_id);
             $properties['page_file'] = $new_file_id;
         }
 

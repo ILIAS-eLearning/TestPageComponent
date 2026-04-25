@@ -63,7 +63,6 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
         $mt = $DIC->ui()->mainTemplate();
         if ($file_id = $a_properties['page_file']) {
             try {
-                include_once("./Modules/File/classes/class.ilObjFile.php");
                 $fileObj = new ilObjFile($file_id, false);
                 $newObj = clone($fileObj);
                 $newObj->setId(0);
@@ -99,7 +98,6 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
 
         if ($file_id = ($a_properties['page_file'] ?? null)) {
             try {
-                include_once("./Modules/File/classes/class.ilObjFile.php");
                 $fileObj = new ilObjFile($file_id, false);
                 $fileObj->delete();
                 $mt->setOnScreenMessage("info", "File Object $file_id deleted.", true);

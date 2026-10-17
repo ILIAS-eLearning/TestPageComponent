@@ -1,21 +1,31 @@
 <?php
+
 /**
- * Copyright (c) 2017 Fred Neumann <fred.neumann@gmx.de>
- * GPLv3, see LICENSE
+ * This file is part of ILIAS, a powerful learning management system
+ * published by ILIAS open source e-Learning e.V.
  *
- * @author Fred Neumann <fred.neumann@gmx.de>
- */
+ * ILIAS is licensed with the GPL-3.0,
+ * see https://www.gnu.org/licenses/gpl-3.0.en.html
+ * You should have received a copy of said license along with the
+ * source code, too.
+ *
+ * If this is not the case or you just want to try ILIAS, you'll find
+ * us at:
+ * https://www.ilias.de
+ * https://github.com/ILIAS-eLearning
+ *
+ *********************************************************************/
 
 // alphanumerical ID of the plugin; never change this
 $id = "pctpc";
 
 // code version; must be changed for all code changes
-$version = "0.0.15";
+$version = "0.0.18";
 
 // ilias min and max version; must always reflect the versions that should
 // run with the plugin
-$ilias_min_version = "11.0";
-$ilias_max_version = "11.999";
+$ilias_min_version = "12.0";
+$ilias_max_version = "12.999";
 
 // optional, but useful: Add one or more responsible persons and a contact email
 $responsible = "Fred Neumann, Alexander Killing";
@@ -23,4 +33,3 @@ $responsible_mail = "fred.neumann@gmx.de, killing@leifos.de";
 
 // this plugin has an own exporter class
 $supports_export = true;
-?>

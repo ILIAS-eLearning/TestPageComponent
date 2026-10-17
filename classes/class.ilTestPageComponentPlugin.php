@@ -27,7 +27,7 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * Get plugin name
      * @return string
      */
-    public function getPluginName() : string
+    public function getPluginName(): string
     {
         return "TestPageComponent";
     }
@@ -35,7 +35,7 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
     /**
      * Check if parent type is valid
      */
-    public function isValidParentType(string $a_parent_type) : bool
+    public function isValidParentType(string $a_parent_type): bool
     {
         // test with all parent types
         return true;
@@ -47,9 +47,9 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * @param string $a_event
      * @param mixed  $a_parameter
      */
-    public function handleEvent(string $a_component, string $a_event, $a_parameter) : void
+    public function handleEvent(string $a_component, string $a_event, mixed $a_parameter): void
     {
-        $_SESSION['pctpc_listened_event'] = array('time' => time(), 'event' => $a_event);
+        ilSession::set('pctpc_listened_event', ['time' => time(), 'event' => $a_event]);
     }
 
     /**
@@ -57,22 +57,18 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * @param array  $a_properties     properties saved in the page, (should be modified if neccessary)
      * @param string $a_plugin_version plugin version of the properties
      */
-    public function onClone(array &$a_properties, string $a_plugin_version) : void
+    public function onClone(array &$a_properties, string $a_plugin_version): void
     {
-        global $DIC;
-        $mt = $DIC->ui()->mainTemplate();
-        if ($file_id = $a_properties['page_file']) {
+        if ($file_id = ($a_properties['page_file'] ?? null)) {
             try {
                 $fileObj = new ilObjFile($file_id, false);
-                $newObj = $fileObj->cloneObject(0,0, true);
+                $newObj = $fileObj->cloneObject(0, 0, true);
                 $a_properties['page_file'] = $newObj->getId();
-                $mt->setOnScreenMessage("info", "File Object $file_id cloned.", true);
             } catch (Exception $e) {
-                $mt->setOnScreenMessage("failure", $e->getMessage(), true);
             }
         }
 
-        if ($additional_data_id = $a_properties['additional_data_id']) {
+        if ($additional_data_id = ($a_properties['additional_data_id'] ?? null)) {
             $data = $this->getData($additional_data_id);
             $id = $this->saveData($data);
             $a_properties['additional_data_id'] = $id;
@@ -84,11 +80,8 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * @param array  $a_properties     properties saved in the page (will be deleted afterwards)
      * @param string $a_plugin_version plugin version of the properties
      */
-    public function onDelete(array $a_properties, string $a_plugin_version, bool $move_operation = false) : void
+    public function onDelete(array $a_properties, string $a_plugin_version, bool $move_operation = false): void
     {
-        global $DIC;
-        $mt = $DIC->ui()->mainTemplate();
-
         if ($move_operation) {
             return;
         }
@@ -97,13 +90,11 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
             try {
                 $fileObj = new ilObjFile($file_id, false);
                 $fileObj->delete();
-                $mt->setOnScreenMessage("info", "File Object $file_id deleted.", true);
             } catch (Exception $e) {
-                $mt->setOnScreenMessage("failure", $e->getMessage(), true);
             }
         }
 
-        if ($additional_data_id = $a_properties['additional_data_id']) {
+        if ($additional_data_id = ($a_properties['additional_data_id'] ?? null)) {
             $this->deleteData($additional_data_id);
         }
     }
@@ -113,7 +104,7 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
      * @param string $src
      * @param string $dst
      */
-    private function rCopy(string $src, string $dst) : void
+    private function rCopy(string $src, string $dst): void
     {
         $dir = opendir($src);
         if (!is_dir($dst)) {
@@ -134,14 +125,11 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
     /**
      * Get additional data by id
      */
-    public function getData(int $id) : ?string
+    public function getData(int $id): ?string
     {
-        global $DIC;
-        $db = $DIC->database();
-
-        $query = "SELECT data FROM pctcp_data WHERE id = " . $db->quote($id, 'integer');
-        $result = $db->query($query);
-        if ($row = $db->fetchAssoc($result)) {
+        $query = "SELECT data FROM pctcp_data WHERE id = " . $this->db->quote($id, 'integer');
+        $result = $this->db->query($query);
+        if ($row = $this->db->fetchAssoc($result)) {
             return $row['data'];
         }
         return null;
@@ -150,13 +138,10 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
     /**
      * Save new additional data
      */
-    public function saveData(string $data) : int
+    public function saveData(string $data): int
     {
-        global $DIC;
-        $db = $DIC->database();
-
-        $id = $db->nextId('pctcp_data');
-        $db->insert(
+        $id = $this->db->nextId('pctcp_data');
+        $this->db->insert(
             'pctcp_data',
             array(
                 'id' => array('integer', $id),
@@ -169,12 +154,9 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
     /**
      * Update additional data
      */
-    public function updateData(int $id, string $data) : void
+    public function updateData(int $id, string $data): void
     {
-        global $DIC;
-        $db = $DIC->database();
-
-        $db->update(
+        $this->db->update(
             'pctcp_data',
             array(
                 'data' => array('text', $data)
@@ -188,12 +170,9 @@ class ilTestPageComponentPlugin extends ilPageComponentPlugin
     /**
      * Delete additional data
      */
-    public function deleteData(int $id) : void
+    public function deleteData(int $id): void
     {
-        global $DIC;
-        $db = $DIC->database();
-
-        $query = "DELETE FROM pctcp_data WHERE ID = " . $db->quote($id, 'integer');
-        $db->manipulate($query);
+        $query = "DELETE FROM pctcp_data WHERE ID = " . $this->db->quote($id, 'integer');
+        $this->db->manipulate($query);
     }
 }

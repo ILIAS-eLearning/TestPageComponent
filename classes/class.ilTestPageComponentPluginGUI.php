@@ -28,6 +28,9 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
     protected ilLanguage $lng;
     protected ilCtrl $ctrl;
     protected ilGlobalTemplateInterface $tpl;
+    protected \ILIAS\HTTP\Services $http;
+    protected \ILIAS\Refinery\Factory $refinery;
+    protected \ILIAS\FileUpload\FileUpload $upload;
 
     public function __construct()
     {
@@ -38,12 +41,15 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
         $this->lng = $DIC->language();
         $this->ctrl = $DIC->ctrl();
         $this->tpl = $DIC['tpl'];
+        $this->http = $DIC->http();
+        $this->refinery = $DIC->refinery();
+        $this->upload = $DIC->upload();
     }
 
     /**
      * Execute command
      */
-    public function executeCommand() : void
+    public function executeCommand(): void
     {
         $next_class = $this->ctrl->getNextClass();
         switch ($next_class) {
@@ -60,7 +66,7 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
     /**
      * Create
      */
-    public function insert() : void
+    public function insert(): void
     {
         $form = $this->initForm(true);
         $this->tpl->setContent($form->getHTML());
@@ -69,13 +75,10 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
     /**
      * Save new pc example element
      */
-    public function create() : void
+    public function create(): void
     {
         $form = $this->initForm(true);
         if ($this->saveForm($form, true)) {
-            ;
-        }
-        {
             $this->tpl->setOnScreenMessage("success", $this->lng->txt("msg_obj_modified"), true);
             $this->returnToParent();
         }
@@ -83,20 +86,17 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
         $this->tpl->setContent($form->getHTML());
     }
 
-    public function edit() : void
+    public function edit(): void
     {
         $form = $this->initForm();
 
         $this->tpl->setContent($form->getHTML());
     }
 
-    public function update() : void
+    public function update(): void
     {
         $form = $this->initForm(false);
         if ($this->saveForm($form, false)) {
-            ;
-        }
-        {
             $this->tpl->setOnScreenMessage("success", $this->lng->txt("msg_obj_modified"), true);
             $this->returnToParent();
         }
@@ -107,7 +107,7 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
     /**
      * Init editing form
      */
-    protected function initForm(bool $a_create = false) : ilPropertyFormGUI
+    protected function initForm(bool $a_create = false): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();
 
@@ -155,7 +155,7 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
         return $form;
     }
 
-    protected function saveForm(ilPropertyFormGUI $form, bool $a_create) : bool
+    protected function saveForm(ilPropertyFormGUI $form, bool $a_create): bool
     {
         if ($form->checkInput()) {
             $properties = $this->getProperties();
@@ -164,26 +164,21 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
             $properties['page_value'] = $form->getInput('page_value');
 
             // file object
-            if (isset($_FILES["page_file"]["name"])) {
+            $upload = $this->getUploadResult('page_file');
+            if ($upload !== null) {
                 $old_file_id = empty($properties['page_file']) ? null : $properties['page_file'];
 
                 $fileObj = new ilObjFile((int) $old_file_id, false);
                 $fileObj->setType("file");
-                $fileObj->setTitle($_FILES["page_file"]["name"]);
+                $fileObj->setTitle($upload->getName());
                 $fileObj->setDescription("");
-                $fileObj->setFileName($_FILES["page_file"]["name"]);
+                $fileObj->setFileName($upload->getName());
                 if (empty($old_file_id)) {
                     $fileObj->create();
                 } else {
                     $fileObj->update();
                 }
-                // upload file to filesystem
-                if ($_FILES["page_file"]["tmp_name"] !== "") {
-                    $fileObj->getUploadFile(
-                        $_FILES["page_file"]["tmp_name"],
-                        $_FILES["page_file"]["name"]
-                    );
-                }
+                $fileObj->getUploadFile($upload->getPath(), $upload->getName());
 
                 $properties['page_file'] = $fileObj->getId();
             }
@@ -207,10 +202,30 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
         return false;
     }
 
+    protected function getUploadResult(string $input_name): ?\ILIAS\FileUpload\DTO\UploadResult
+    {
+        $uploaded_file = $this->http->request()->getUploadedFiles()[$input_name] ?? null;
+        if (!$uploaded_file instanceof \Psr\Http\Message\UploadedFileInterface
+            || $uploaded_file->getClientFilename() === '') {
+            return null;
+        }
+
+        if (!$this->upload->hasBeenProcessed()) {
+            $this->upload->process();
+        }
+
+        $path = $uploaded_file->getStream()->getMetadata('uri');
+        $result = is_string($path) ? ($this->upload->getResults()[$path] ?? null) : null;
+
+        return $result instanceof \ILIAS\FileUpload\DTO\UploadResult && $result->isOK() && $result->getPath() !== ''
+            ? $result
+            : null;
+    }
+
     /**
      * Cancel
      */
-    public function cancel()
+    public function cancel(): void
     {
         $this->returnToParent();
     }
@@ -220,17 +235,17 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
      * @param string    page mode (edit, presentation, print, preview, offline)
      * @return string   html code
      */
-    public function getElementHTML(string $a_mode, array $a_properties, string $a_plugin_version) : string
+    public function getElementHTML(string $a_mode, array $a_properties, string $a_plugin_version): string
     {
         $display = array_merge($a_properties, $this->getPageInfo());
 
         // show properties stores in the page
-        $html = '<pre>' . print_r($display, true);
+        $html = '<pre>' . htmlspecialchars(print_r($display, true), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         // show additional data
         if (!empty($a_properties['additional_data_id'])) {
             $data = $this->plugin->getData($a_properties['additional_data_id']);
-            $html .= 'Data: ' . $data . "\n";
+            $html .= 'Data: ' . htmlspecialchars((string) $data, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "\n";
         }
 
         // show uploaded file
@@ -239,11 +254,15 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
                 $fileObj = new ilObjFile($a_properties['page_file'], false);
 
                 // security
-                $_SESSION[__CLASS__]['allowedFiles'][$fileObj->getId()] = true;
+                $allowed_files = (array) (ilSession::get(__CLASS__ . '_allowed_files') ?? []);
+                $allowed_files[$fileObj->getId()] = true;
+                ilSession::set(__CLASS__ . '_allowed_files', $allowed_files);
 
                 $this->ctrl->setParameter($this, 'id', $fileObj->getId());
-                $url = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilTestPageComponentPluginGUI'),
-                    'downloadFile');
+                $url = $this->ctrl->getLinkTargetByClass(
+                    array('ilUIPluginRouterGUI', 'ilTestPageComponentPluginGUI'),
+                    'downloadFile'
+                );
                 $title = $fileObj->getPresentationTitle();
 
             } catch (Exception $e) {
@@ -251,14 +270,15 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
                 $title = $e->getMessage();
             }
 
-            $html .= 'File: <a href="' . $url . '">' . $title . '</a>' . "\n";
+            $html .= 'File: <a href="' . htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">'
+                . htmlspecialchars($title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</a>' . "\n";
         }
 
         // Show listened event
-        if ($event = ($_SESSION['pctpc_listened_event'] ?? null)) {
+        if ($event = ilSession::get('pctpc_listened_event')) {
             $html .= "\n";
             $html .= 'Last Auth Event: ' . ilDatePresentation::formatDate(new ilDateTime($event['time'], IL_CAL_UNIX));
-            $html .= ' ' . $event['event'];
+            $html .= ' ' . htmlspecialchars($event['event'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         }
 
         $html .= '</pre>';
@@ -269,10 +289,11 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
     /**
      * download file of file lists
      */
-    function downloadFile() : void
+    public function downloadFile(): void
     {
-        $file_id = (int) $_GET['id'];
-        if ($_SESSION[__CLASS__]['allowedFiles'][$file_id]) {
+        $file_id = $this->http->wrapper()->query()->retrieve('id', $this->refinery->kindlyTo()->int());
+        $allowed_files = (array) (ilSession::get(__CLASS__ . '_allowed_files') ?? []);
+        if ($file_id > 0 && ($allowed_files[$file_id] ?? false)) {
             $fileObj = new ilObjFile($file_id, false);
             $fileObj->sendFile();
         } else {
@@ -284,7 +305,7 @@ class ilTestPageComponentPluginGUI extends ilPageComponentPluginGUI
      * Get information about the page that embeds the component
      * @return    array    key => value
      */
-    public function getPageInfo() : array
+    public function getPageInfo(): array
     {
         return array(
             'page_id' => $this->plugin->getPageId(),

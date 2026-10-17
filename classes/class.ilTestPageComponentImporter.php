@@ -22,7 +22,16 @@
  */
 class ilTestPageComponentImporter extends ilPageComponentPluginImporter
 {
-    public function init() : void
+    protected ilComponentFactory $component_factory;
+
+    public function __construct()
+    {
+        global $DIC;
+
+        parent::__construct();
+        $this->component_factory = $DIC['component.factory'];
+    }
+    public function init(): void
     {
     }
 
@@ -38,14 +47,10 @@ class ilTestPageComponentImporter extends ilPageComponentPluginImporter
         string $a_id,
         string $a_xml,
         ilImportMapping $a_mapping
-    ) : void {
-        global $DIC;
-
-        /** @var ilComponentFactory $component_factory */
-        $component_factory = $DIC["component.factory"];
+    ): void {
 
         /** @var ilTestPageComponentPlugin $plugin */
-        $plugin = $component_factory->getPlugin("pctpc");
+        $plugin = $this->component_factory->getPlugin("pctpc");
 
         $new_id = self::getPCMapping($a_id, $a_mapping);
 
@@ -53,14 +58,20 @@ class ilTestPageComponentImporter extends ilPageComponentPluginImporter
         $version = self::getPCVersion($new_id);
 
         // write the mapped file id to the properties
-        if ($old_file_id = $properties['page_file']) {
+        if ($old_file_id = ($properties['page_file'] ?? null)) {
             $new_file_id = $a_mapping->getMapping("components/ILIAS/File", 'file', $old_file_id);
             $properties['page_file'] = $new_file_id;
         }
 
         // save the data from the imported xml and write its id to the properties
-        if ($additional_data_id = $properties['additional_data_id']) {
-            $data = html_entity_decode(substr($a_xml, 6, -7));
+        if ($additional_data_id = ($properties['additional_data_id'] ?? null)) {
+            $use_internal_errors = libxml_use_internal_errors(true);
+            $xml = simplexml_load_string($a_xml, SimpleXMLElement::class, LIBXML_NONET);
+            libxml_use_internal_errors($use_internal_errors);
+            if (!$xml instanceof SimpleXMLElement || $xml->getName() !== 'data') {
+                throw new ilException('Invalid TestPageComponent export data.');
+            }
+            $data = (string) $xml;
             $id = $plugin->saveData($data);
             $properties['additional_data_id'] = $id;
         }

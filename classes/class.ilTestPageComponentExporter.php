@@ -23,7 +23,16 @@
  */
 class ilTestPageComponentExporter extends ilPageComponentPluginExporter
 {
-    public function init() : void
+    protected ilComponentFactory $component_factory;
+
+    public function __construct()
+    {
+        global $DIC;
+
+        parent::__construct();
+        $this->component_factory = $DIC['component.factory'];
+    }
+    public function init(): void
     {
     }
 
@@ -34,7 +43,7 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      * @param array        ids
      * @return        array        array of array with keys "component", entity", "ids"
      */
-    public function getXmlExportHeadDependencies(string $a_entity, string $a_target_release, array $a_ids) : array
+    public function getXmlExportHeadDependencies(string $a_entity, string $a_target_release, array $a_ids): array
     {
         // collect the files to export
         $file_ids = array();
@@ -66,19 +75,19 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      * @param string        id
      * @return    string        xml string
      */
-    public function getXmlRepresentation(string $a_entity, string $a_schema_version, string $a_id) : string
+    public function getXmlRepresentation(string $a_entity, string $a_schema_version, string $a_id): string
     {
-        global $DIC;
-
-        /** @var ilComponentFactory $component_factory */
-        $component_factory = $DIC["component.factory"];
-
         /** @var ilTestPageComponentPlugin $plugin */
-        $plugin = $component_factory->getPlugin("pctpc");
+        $plugin = $this->component_factory->getPlugin("pctpc");
 
-        $properties = self::getPCProperties($a_id);
-        $data = $plugin->getData($properties['additional_data_id']);
-        return '<data>' . htmlentities($data) . '</data>';
+        $properties = self::getPCProperties($a_id) ?? [];
+        $data = isset($properties['additional_data_id'])
+            ? $plugin->getData((int) $properties['additional_data_id'])
+            : null;
+        $xml = new ilXmlWriter();
+        $xml->xmlElement('data', [], $data ?? '');
+
+        return $xml->xmlDumpMem(false);
     }
 
     /**
@@ -88,7 +97,7 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      * @param array        ids
      * @return        array        array of array with keys "component", entity", "ids"
      */
-    public function getXmlExportTailDependencies(string $a_entity, string $a_target_release, array $a_ids) : array
+    public function getXmlExportTailDependencies(string $a_entity, string $a_target_release, array $a_ids): array
     {
         return array();
     }
@@ -105,7 +114,7 @@ class ilTestPageComponentExporter extends ilPageComponentPluginExporter
      *            "max" => "")
      *        );
      */
-    public function getValidSchemaVersions(string $a_entity) : array
+    public function getValidSchemaVersions(string $a_entity): array
     {
         return array(
             '5.3.0' => array(
